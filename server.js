@@ -12,124 +12,9 @@ setInterval(function () {
 
 
 var sys = require("sys"),
-    app = require('express').createServer(),
+    express = require('express'),
+    app = express.createServer(),
     io = require('socket.io');
-
-// set the view engine
-app.set('view engine', 'utml');
-
-app.configure('development', function(){
-  app.use(express.static(__dirname + '/style.css'));
-  app.use(express.static(__dirname + '/client.js'));
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
-
-app.listen(Number(process.env.PORT || PORT));
-
-app.get('/', function(req, res) {
-  res.render('index', {});
-});
-
-app.get('/who', function(req, res) {
-  var nicks = [];
-  for (var id in sessions) {
-    if (!sessions.hasOwnProperty(id)) continue;
-    var session = session[id];
-    nicks.push(session.nick);
-  }
-  res.send({ nicks: nicks, rss: mem.rss }, 200);
-  return;
-});
-
-app.get("/join", function(req, res) {
-  var nick = req.param('nick');
-  if (nick == null || nick.length === 0) {
-    res.send({ error:'Bad nick.' }, 400);
-    return;
-  }
-  var session = createSession(nick);
-  if (session == null) {
-    res.send({ error:'Nick in use.' }, 400);
-    return;
-  }
-  
-  channel.appendMessage(session.nick, "join");
-  res.send({ 
-    id: session.id,
-    nick: session.nick,
-    rss: mem.rss,
-    starttime: starttime
-  });
-  return;
-});
-
-app.get('/part', function(req, res) {
-  var id = req.param('id');
-  var session;
-  if (id && sessions[id]) {
-    session = sessions[id];
-    session.destroy();
-  }
-  res.send({ rss: mem.rss });
-});
-
-app.get('/recv', function(req, res) {
-  if (!req.param('since')) {
-    res.send({ error: 'Must supply since parameter' }, 400);
-    return;
-  }
-  var id = req.param('id');
-  var session;
-  if (id && sessions[id]) {
-    session = sessions[id];
-    session.poke();
-  }
-
-  var since = parseInt(req.param('since'), 10);
-  
-  channel.query(since, function (messages) {
-    if (session) session.poke();
-    res.send({ messages: messages, rss: mem.rss });
-  });
-});
-
-app.get('/send', function(req, res) {
-  var id = req.param('id');
-  var text = req.param('text');
-  
-  var session = sessions[id];
-  if (!session || !text) {
-    res.send({ error: 'No such session id' }, 400);
-    return;
-  }
-
-  session.poke();
-
-  channel.appendMessage(session.nick, 'msg', text);
-  res.send({ rss: mem.rss });
-});
-
-
-app.get("/cmd", function (req, res) {
-  var id = req.param('id');
-  var text = req.param('cmd');
-
-  var session = sessions[id];
-  if (!session || !cmd) {
-    res.send({ error: "No such session id" }, 400);
-    return;
-  }
-
-  session.poke();
-
-  /* TODO: implement commands  */
-
-  res.send({ rss: mem.rss });
-});
-
-
-
-
 
 
 
@@ -236,3 +121,126 @@ setInterval(function () {
     }
   }
 }, 1000);
+
+
+// set the view engine
+app.set('view engine', 'utml');
+
+app.configure(function(){
+  app.use(express.bodyParser());
+  app.use(express.static(__dirname + '/content'));
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.listen(Number(process.env.PORT || PORT));
+
+app.get('/', function(req, res) {
+  //res.render('index.html', {});
+  res.sendfile('views/index.html');
+});
+
+app.get('/who', function(req, res) {
+  var nicks = [];
+  for (var id in sessions) {
+    if (!sessions.hasOwnProperty(id)) continue;
+    var session = sessions[id];
+    nicks.push(session.nick);
+  }
+  res.send({ nicks: nicks, rss: mem.rss }, 200);
+  return;
+});
+
+app.get("/join", function(req, res) {
+  var nick = req.param('nick');
+  if (nick == null || nick.length === 0) {
+    res.send({ error:'Bad nick.' }, 400);
+    return;
+  }
+  var session = createSession(nick);
+  if (session == null) {
+    res.send({ error:'Nick in use.' }, 400);
+    return;
+  }
+  
+  channel.appendMessage(session.nick, "join");
+  res.send({ 
+    id: session.id,
+    nick: session.nick,
+    rss: mem.rss,
+    starttime: starttime
+  });
+  return;
+});
+
+app.get('/part', function(req, res) {
+  var id = req.param('id');
+  var session;
+  if (id && sessions[id]) {
+    session = sessions[id];
+    session.destroy();
+  }
+  res.send({ rss: mem.rss });
+});
+
+app.get('/recv', function(req, res) {
+  if (!req.param('since')) {
+    res.send({ error: 'Must supply since parameter' }, 400);
+    return;
+  }
+  var id = req.param('id');
+  var session;
+  if (id && sessions[id]) {
+    session = sessions[id];
+    session.poke();
+  }
+
+  var since = parseInt(req.param('since'), 10);
+  
+  channel.query(since, function (messages) {
+    if (session) session.poke();
+    res.send({ messages: messages, rss: mem.rss });
+  });
+});
+
+app.post('/send', function(req, res) {
+  var id = req.param('id');
+  var text = req.param('text');
+  
+  console.log(id, text, req.body);
+
+  var session = sessions[id];
+  if (!session || !text) {
+    res.send({ error: 'No such session id' }, 400);
+    return;
+  }
+
+  session.poke();
+
+  channel.appendMessage(session.nick, 'msg', text);
+  res.send({ rss: mem.rss });
+});
+
+
+app.get("/cmd", function (req, res) {
+  var id = req.param('id');
+  var text = req.param('cmd');
+
+  var session = sessions[id];
+  if (!session || !cmd) {
+    res.send({ error: "No such session id" }, 400);
+    return;
+  }
+
+  session.poke();
+
+  /* TODO: implement commands  */
+
+  res.send({ rss: mem.rss });
+});
+
+
+
+
+
+
+
