@@ -11,116 +11,13 @@ setInterval(function () {
 }, 10*1000);
 
 
-var sys = require("sys"),
-    express = require('express'),
-    app = express.createServer(),
-    io = require('socket.io');
+var sys      = require("sys"),
+    express  = require('express'),
+    app      = express.createServer(),
+    io       = require('socket.io'),
+    chat     = require('chat.js'),
+    SocketRouter = require('./socketrouter.js');
 
-
-
-var MESSAGE_BACKLOG = 200,
-    SESSION_TIMEOUT = 60 * 1000;
-
-var channel = new function () {
-  var messages = [],
-      callbacks = [];
-
-  this.appendMessage = function (nick, type, text) {
-    var m = { nick: nick
-            , type: type // "msg", "join", "part"
-            , text: text
-            , timestamp: (new Date()).getTime()
-            };
-
-    switch (type) {
-      case "msg":
-        sys.puts("<" + nick + "> " + text);
-        break;
-      case "join":
-        sys.puts(nick + " join");
-        break;
-      case "part":
-        sys.puts(nick + " part");
-        break;
-    }
-
-    messages.push( m );
-
-    while (callbacks.length > 0) {
-      callbacks.shift().callback([m]);
-    }
-
-    while (messages.length > MESSAGE_BACKLOG)
-      messages.shift();
-  };
-
-  this.query = function (since, callback) {
-    var matching = [];
-    for (var i = 0; i < messages.length; i++) {
-      var message = messages[i];
-      if (message.timestamp > since)
-        matching.push(message)
-    }
-
-    if (matching.length != 0) {
-      callback(matching);
-    } else {
-      callbacks.push({ timestamp: new Date(), callback: callback });
-    }
-  };
-
-  // clear old callbacks
-  // they can hang around for at most 30 seconds.
-  setInterval(function () {
-    var now = new Date();
-    while (callbacks.length > 0 && now - callbacks[0].timestamp > 30*1000) {
-      callbacks.shift().callback([]);
-    }
-  }, 3000);
-};
-
-var sessions = {};
-
-function createSession (nick) {
-  if (nick.length > 50) return null;
-  if (/[^\w_\-^!]/.exec(nick)) return null;
-
-  for (var i in sessions) {
-    var session = sessions[i];
-    if (session && session.nick === nick) return null;
-  }
-
-  var session = { 
-    nick: nick, 
-    id: Math.floor(Math.random()*99999999999).toString(),
-    timestamp: new Date(),
-
-    poke: function () {
-      session.timestamp = new Date();
-    },
-
-    destroy: function () {
-      channel.appendMessage(session.nick, "part");
-      delete sessions[session.id];
-    }
-  };
-
-  sessions[session.id] = session;
-  return session;
-}
-
-// interval to kill off old sessions
-setInterval(function () {
-  var now = new Date();
-  for (var id in sessions) {
-    if (!sessions.hasOwnProperty(id)) continue;
-    var session = sessions[id];
-
-    if (now - session.timestamp > SESSION_TIMEOUT) {
-      session.destroy();
-    }
-  }
-}, 1000);
 
 
 // set the view engine
@@ -139,164 +36,54 @@ app.get('/', function(req, res) {
   res.sendfile('views/index.html');
 });
 
+/*
 app.get('/who', function(req, res) {
-  var results = who();
-  res.send.apply(res, results);
+  var data = who();
+  var status = data.error && 400 || 200;
+  res.send(res, data, status);
 });
 
 app.get("/join", function(req, res) {
   var nick = req.param('nick');
-  var results = join(nick);
-  res.send.apply(res, results);
+  var data = join(nick);
+  var status = data.error && 400 || 200;
+  res.send(res, data, status);
 });
 
 app.get('/part', function(req, res) {
   var id = req.param('id');
-  var results = part(id);
-  res.send.apply(res, results);
+  var data = part(id);
+  var status = data.error && 400 || 200;
+  res.send(res, data, status);
 });
 
 app.get('/recv', function(req, res) {
   var since = req.param('since');
   var id = req.param('id');
   
-  receive(since, id, function(results) {
-    res.send.apply(res, results);
+  receive(since, id, function(data) {
+    var status = data.error && 400 || 200;
+    res.send(res, data, status);
   });
 });
 
 app.post('/send', function(req, res) {
   var id = req.param('id');
   var text = req.param('text');
-  var result = send(id, text);
-  res.send.apply(res, result);
+  var data = send(id, text);
+  var status = data.error && 400 || 200;
+  res.send(res, data, status);
 });
 
 
 app.get("/cmd", function (req, res) {
   var id = req.param('id');
   var cmd = req.param('cmd');
-  var results = command(id, cmd);
-  res.send.apply(res, results);
+  var data = command(id, cmd);
+  var status = data.error && 400 || 200;
+  res.send(res, data, status);
 });
-
-
-
-
-/**
- * command implementation
- */
-
-function who() {
-  var nicks = [];
-  for (var id in sessions) {
-    if (!sessions.hasOwnProperty(id)) continue;
-    var session = sessions[id];
-    nicks.push(session.nick);
-  }
-  return [{ nicks: nicks, rss: mem.rss }, 200];
-}
-
-function join(nick) {
-  if (nick == null || nick.length === 0) {
-    return [{ error:'Bad nick.' }, 400];
-  }
-  var session = createSession(nick);
-  if (session == null) {
-    return [{ error:'Nick in use.' }, 400];
-  }
-  
-  channel.appendMessage(session.nick, "join");
-  
-  return [{ 
-    id: session.id,
-    nick: session.nick,
-    rss: mem.rss,
-    starttime: starttime
-  }, 200];
-}
-
-function part(id) {
-  var session = sessions[id];
-  if (id && session) {
-    session.destroy();
-  }
-  return [{ rss: mem.rss }, 200];
-}
-
-function receive(since, id, fn) {
-  if (!since) {
-    fn([{ error: 'Must supply since parameter' }, 400]);
-    return;
-  }
-  
-  var session = sessions[id];
-  if (id && session) {
-    session.poke();
-  }
-
-  var since = parseInt(since, 10);
-  
-  channel.query(since, function (messages) {
-    if (session) session.poke();
-    fn([{ messages: messages, rss: mem.rss }, 200]);
-  });
-}
-
-function send(id, text) {
-  var session = sessions[id];
-  if (!session || !text) {
-    return [{ error: 'No such session id' }, 400];
-  }
-
-  session.poke();
-
-  channel.appendMessage(session.nick, 'msg', text);
-  return [{ rss: mem.rss }, 200];
-}
-
-function command(id, cmd) {
-  var session = sessions[id];
-  if (!session || !cmd) {
-    return [{ error: "No such session id" }, 400];
-  }
-
-  session.poke();
-
-  /* TODO: implement commands  */
-
-  return [{ rss : mem.rss }, 200];
-}
-
-
-var router = require('./socketrouter.js');
-
-router.add('who', function(req, res) {
-  var result = who();
-  
-  res.data = result[0];
-});
-
-router.add('join', function(client, data) {
-  var result = join(data.nick);
-  client.send(result[0]);
-});
-
-router.add('part', function(client, data) {
-  
-});
-
-router.add('recv', function(client, data) {
-  
-});
-
-router.add('send', function(client, data) {
-  
-});
-
-router.add('cmd', function(client, data) {
-  
-});
+*/
 
 
 
@@ -304,17 +91,45 @@ router.add('cmd', function(client, data) {
 
 var socket = io.listen(app);
 
-socket.on('connect', function(client){
-  
-  client.on('message', function(data) {
-    
-  });
+var router = new SocketRouter(socket);
 
-  client.on('disconnect', function() {
-    
-  });
-  
+router.add('message/who', function(req, client, next) {
+  var data = chat.who();
+  client.send(data);
+  next();
 });
+
+router.add('message/join', function(req, client, next) {
+  var data = chat.join(req.nick);
+  client.send(data);
+  next();
+});
+
+router.add('message/part', function(req, client, next) {
+  var data = chat.part(req.id);
+  client.send(data);
+  next();
+});
+
+router.add('message/recv', function(req, client, next) {
+  var data = chat.receive(req.since, req.id, function(data) {
+    client.send(data);
+    next();
+  });
+});
+
+router.add('message/send', function(req, client, next) {
+  var data = chat.send(req.id, req.text);
+  client.send(data);
+  next();
+});
+
+router.add('message/cmd', function(req, client, next) {
+  var data = chat.cmd(req.id, req.text);
+  client.send(data);
+  next();
+});
+
 
 
 
