@@ -1,12 +1,9 @@
 <html>
   <head>
-    <link rel="stylesheet" href="content/style.css" type="text/css"/>
+    <link rel="stylesheet" href="style.css" type="text/css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-    <script src="//ajax.cdnjs.com/ajax/libs/underscore.js/1.1.5/underscore-min.js"></script>
-    <script src="socket.io/socket.io.js"></script>
-    <script src="content/spine.min.js" type="text/javascript"></script>
-
-    <script src="content/app.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js" type="text/javascript"></script>
     <title>node chat</title>
   </head>
   <body>
@@ -33,7 +30,7 @@
       </div>
       <div id="toolbar">
         <ul id="status">
-          <li><span>0</span> users</li>
+          <li><a id="usersLink" href="#">0 users</a></li>
           <li>uptime: <span id="uptime">?</span></li>
           <li>memory: <span id="rss">?</span>mb RSS</li>
         </ul>
@@ -41,19 +38,13 @@
       </div>
       
       <script id="messageTmpl" type="text/html">
-        <table class="message <#= type #>">
+        <table class="message <#= messageType #>">
           <tbody><tr>
             <td class="date"><#= date #></td>
             <td class="nick"><#= nick #></td>
             <td class="msg-text"><#= text #></td>
           </tr></tbody>
         </table>
-      </script>
-      
-      <script id="statusTmpl" type="text/html">
-        <li><span><#= userCount #></span> users</a></li>
-        <li>uptime: <span><#= uptime #></span></li>
-        <li>memory: <span><#= rss #></span>mb RSS</li>
       </script>
       
   </body>
