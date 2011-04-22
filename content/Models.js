@@ -2,8 +2,6 @@ $(function($){
   window.Models = {};
   
   var Message = window.Models.Message = Spine.Model.setup('Message', ['type', 'timestamp', 'nick', 'text']);
-  //Message.extend(Spine.Model.Local);
-  
   Message.include({
   
     date: function() {
@@ -18,16 +16,15 @@ $(function($){
   
   
   
-  var User = window.Models..User = Spine.Model.setup('User', ['nick']);
-  // User.extend(Spine.Model.Local);
-  
+  var User = window.Models.User = Spine.Model.setup('User', ['id', 'nick']);
   User.extend({
     
   });
   
-  var Status = window.Models..Status = Spine.Model.setup('Status', ['users', 'starttime', 'rss']);
-  //Status.extend(Spine.Model.Local);
   
+  
+  
+  var Status = window.Models.Status = Spine.Model.setup('Status', ['users', 'starttime', 'rss']);
   Status.include({
     
     userCount: function() {
@@ -39,7 +36,6 @@ $(function($){
     }
     
   });
-  
   Status.extend({
     
   });

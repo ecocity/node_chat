@@ -15,8 +15,8 @@ var sys      = require("sys"),
     express  = require('express'),
     app      = express.createServer(),
     io       = require('socket.io'),
-    chat     = require('chat.js'),
-    SocketRouter = require('./socketrouter.js');
+    chat     = require('./chat'),
+    SocketRouter = require('./socketrouter');
 
 
 
@@ -127,6 +127,12 @@ router.add('message/send', function(req, client, next) {
 router.add('message/cmd', function(req, client, next) {
   var data = chat.cmd(req.id, req.text);
   client.send(data);
+  next();
+});
+
+router.add('connection', function(req, client, next) {
+  client.send(chat.who());
+  //client.send()
   next();
 });
 

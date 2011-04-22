@@ -10,27 +10,26 @@
     <title>node chat</title>
   </head>
   <body>
+    <div id="login">
+      <form action="#">
+        <fieldset> 
+          <p>
+            This is a chat room. Both the client-side and server-side are
+            written in javascript. The source code is
+            <a href="http://github.com/mikefrey/node_chat">here</a>.
+          </p>
+    
+          <label for="nick">Name</label>
+          <input id="txtNick" class="text"type="text" name="nick" value=""/>
+          <input id="btnJoin" class="button" type="submit" name="" value="Join"/>
+    
+        </fieldset>
+      </form>
+    </div>
+      
     <div id="app">
-      <div id="connect">
-        <form action="#">
-          <fieldset> 
-            <p>
-              This is a chat room. Both the client-side and server-side are
-              written in javascript. The source code is
-              <a href="http://github.com/mikefrey/node_chat">here</a>.
-            </p>
-
-            <label for="nick">Name</label>
-            <input id="nickInput" class="text"type="text" name="nick" value=""/>
-            <input id="connectButton" class="button" type="submit" name="" value="Join"/>
-
-          </fieldset>
-        </form>
-      </div>
-      <div id="loading"><p>loading</p></div>
-      <div id="log">
-        
-      </div>
+      <div id="log"></div>
+      
       <div id="toolbar">
         <ul id="status">
           <li><span>0</span> users</li>
@@ -39,22 +38,23 @@
         </ul>
         <input tabindex="1" type="text" id="entry"/>
       </div>
-      
-      <script id="messageTmpl" type="text/html">
-        <table class="message <#= type #>">
-          <tbody><tr>
-            <td class="date"><#= date #></td>
-            <td class="nick"><#= nick #></td>
-            <td class="msg-text"><#= text #></td>
-          </tr></tbody>
-        </table>
-      </script>
-      
-      <script id="statusTmpl" type="text/html">
-        <li><span><#= userCount #></span> users</a></li>
-        <li>uptime: <span><#= uptime #></span></li>
-        <li>memory: <span><#= rss #></span>mb RSS</li>
-      </script>
+    </div>
+    
+    <script id="messageTmpl" type="text/html">
+      <table class="message <#= type #>">
+        <tbody><tr>
+          <td class="date"><#= date #></td>
+          <td class="nick"><#= nick #></td>
+          <td class="msg-text"><#= text #></td>
+        </tr></tbody>
+      </table>
+    </script>
+    
+    <script id="statusTmpl" type="text/html">
+      <li><span><#= userCount #></span> users</a></li>
+      <li>uptime: <span><#= uptime #></span></li>
+      <li>memory: <span><#= rss #></span>mb RSS</li>
+    </script>
       
   </body>
 </html>

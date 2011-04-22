@@ -3,10 +3,10 @@ function wrap(func, wrapper) {
     var args = [func].concat(slice.call(arguments));
     return wrapper.apply(this, args);
   };
-};
+}
 
 
-var SocketRouter = exports.SocketRouter = function SocketRouter(socket) {
+var SocketRouter = exports = module.exports = function SocketRouter(socket) {
   
   this.routeMap = {};
   this.socket = socket;
@@ -33,7 +33,7 @@ var SocketRouter = exports.SocketRouter = function SocketRouter(socket) {
         // handle the event
         this.handle(event, data, client, function(err) {
           // send the error if there was one
-          if (err) client.send({ error:err, req:data };
+          if (err) client.send({ error:err, req:data });
         });
         
       }; 
@@ -41,16 +41,16 @@ var SocketRouter = exports.SocketRouter = function SocketRouter(socket) {
     
   });
   
-}
+};
 
 
 
-SocketRouter.prototype.add = function(cmd) {
-  
-  this.routes[path] = this.routes[path] || [];
+SocketRouter.prototype.add = function(path) {
+
+  this.routeMap[path] = this.routeMap[path] || [];
   
   Array.prototype.slice.call(arguments, 1).forEach(function(fn){
-    this.routes[path].push(fn);
+    this.routeMap[path].push(fn);
   }, this);
   
 };

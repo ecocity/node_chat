@@ -2,6 +2,10 @@ $(function($){
   window.Controllers = {};
   
   
+  /**
+   * Message Controller
+   */
+  
   window.Controllers.Message = Spine.Controller.create({
     
     proxied: ['render'],
@@ -19,6 +23,11 @@ $(function($){
     
   });
   
+  
+  /**
+   * Log Controller
+   */
+  
   window.Controllers.Log = Spine.Controller.create({
     
     init: function() {
@@ -34,6 +43,10 @@ $(function($){
   
   
   
+  
+  /**
+   * Entry Controller
+   */
   
   window.Controllers.Entry = Spine.Controller.create({
     
@@ -60,7 +73,8 @@ $(function($){
         nick : App.user.nick,
         text : text
       });
-      //this.App.log.addMessage(msg);
+      
+      // tell the app that we have a message to send
       this.App.trigger('send:message', msg);
       
       console.log("Send : " + msg);
@@ -71,6 +85,10 @@ $(function($){
   
   
   
+  
+  /**
+   * Status Controller
+   */
   
   window.Controllers.Status = Spine.Controller.create({
     
@@ -83,21 +101,58 @@ $(function($){
     },
     
     init: function() {
-      this.status = Model.Status.inst();
+      this.status = Model.Status.inst({ userCount:'?', rss:'0' });
       this.status.bind('update', render);
     },
     
-    render: function() {
+    render: function(status) {
+      if (status) this.status = status;
       this.el.html(this.template(this.status));
     }
     
   });
   
   
+  
+  /**
+   * Users Controller
+   */
+  
   window.Controllers.Users = Spine.Controller.create({
     
   });
   
+  
+  
+  
+  
+  
+  /**
+   * Login Controller
+   */
+  
+  window.Controllers.Login = Spine.Controller.create({
+    
+    events: {
+      'click #btnJoin': 'join',
+      'keypress #txtNick': 'join'
+    },
+    
+    init: function() {
+      
+    },
+    
+    join: function(ev) {
+      var nick = $('#txtNick').val();
+      this.App.trigger('login:join', nick);
+    }
+    
+  });
+  
+  
+  /**
+   * Socket Controller
+   */
   
   window.Controllers.Socket = Spine.Controller.create({
     
@@ -106,13 +161,13 @@ $(function($){
     url: '', // populated by App
     
     init: function() {
-      var that = this;
       this.socket = new io.Socket(this.url);
-		  this.socket.on('connect', function(){ that.connected(arguments); });
-		  this.socket.on('message', function(){ that.received(arguments); });
-		  this.socket.on('disconnect', function(){ that.disconnected(arguments); });
-		  
-		  this.App.bind('send:message', send);
+      this.socket.on('connect', this.connected);
+      this.socket.on('message', this.received);
+      this.socket.on('disconnect', this.disconnected);
+        
+      this.App.bind('send:message', this.send);
+      this.App.bind('login:join', this.proxy(function(nick){ this.send({nick:nick}); }));
     },
     
     connect: function() {
@@ -129,16 +184,31 @@ $(function($){
     received: function(message) {
       console.log('message', arguments);
       
+      // error message
       if (message.error) {
-        
+        console.error('NODE : ' + message.error);
+        var msg = Model.Message.inst({ text:message.error, type:'error', timestamp:new Date(), nick:'' });
+        this.App.trigger('show:message', msg);
       }
+      // event message
       else if (message.type) {
         // nick, type, text, timestamp
         var msg = Model.Message.inst(message);
         this.App.trigger('show:message', msg);
       }
-      else if (message.rss) {
-        // update status
+      // login message
+      else if (message.id && message.nick) {
+        var user = Models.User.inst({ id:message.id, nick:message.nick });
+        this.App.trigger('login:success', user);
+      }
+      
+      
+      // update status
+      if (message.rss) {
+        this.App.trigger('status:rss', message.rss);
+      }
+      if (message.starttime) {
+        this.App.trigger('status:starttime', message.starttime);
       }
     },
 
@@ -156,6 +226,10 @@ $(function($){
   
   
   
+  /**
+   * Application
+   */
+  
   window.App = Spine.Controller.create({
     el: $('body'),
     
@@ -166,21 +240,35 @@ $(function($){
     elements: {
       '#status': 'statusEl',
       '#entry' : 'entryEl',
-      '#users' : 'usersEl'
+      '#users' : 'usersEl',
       '#log'   : 'logEl',
+      '#login' : 'loingEl',
+      '#app'   : 'appEl'
     },
     
     init: function() {
       // current user
-      this.user = User.inst();
+      this.user = null;
       
       // controllers
       this.users = Controllers.Users.inst({el:this.usersEl});
       this.entry = Controllers.Entry.inst({el:this.entryEl});
       this.status = Controllers.Status.inst({el:this.statusEl});
       this.log = Controllers.Log.inst({el:this.logEl});
+      this.login = Controllers.Login.inst({el:this.loginEl});
       
       this.socket = Controllers.Socket.inst({url:''});
+      this.socket.connect();
+      
+      // events
+      this.App.bind('login:success', this.onJoin)
+    },
+    
+    onJoin: function(user) {
+      if (!user) return;
+      this.user = user;
+      this.loginEl.toggle();
+      this.appEl.toggle();
     }
     
   }).inst();

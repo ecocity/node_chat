@@ -96,7 +96,7 @@ function createSession (nick) {
     if (session && session.nick === nick) return null;
   }
 
-  var session = { 
+  var session = {
     nick: nick, 
     id: Math.floor(Math.random()*99999999999).toString(),
     timestamp: new Date(),
