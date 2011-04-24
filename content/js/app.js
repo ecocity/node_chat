@@ -31,7 +31,7 @@ $(function($){
   window.Controllers.Log = Spine.Controller.create({
     
     init: function() {
-      this.App.bind('send:message show:message', addMessage);
+      this.App.bind('send:message show:message', this.addMessage);
     },
     
     addMessage: function(msg) {
@@ -64,7 +64,7 @@ $(function($){
           msg = target.attr("value").replace("\n", "");
       if (!$.isBlank(msg)) this.send(msg);
       target.attr("value", ""); // clear the entry field.
-    }
+    },
     
     send: function(text) {
       var msg = Model.Message.inst({
@@ -101,8 +101,8 @@ $(function($){
     },
     
     init: function() {
-      this.status = Model.Status.inst({ userCount:'?', rss:'0' });
-      this.status.bind('update', render);
+      this.status = Models.Status.inst({ userCount:'?', rss:'0' });
+      this.status.bind('update', this.render);
     },
     
     render: function(status) {
@@ -139,10 +139,13 @@ $(function($){
     },
     
     init: function() {
-      
+      console.log('Login init');
     },
     
     join: function(ev) {
+      if (ev.type = 'keypress' && ev.keyCode != 13) return;
+      ev.preventDefault();
+      console.log('JOIN');
       var nick = $('#txtNick').val();
       this.App.trigger('login:join', nick);
     }
@@ -158,10 +161,15 @@ $(function($){
     
     proxied: ['connect', 'connected', 'received', 'disconnected', 'send'],
     
-    url: '', // populated by App
+    url: 'mike.freyday.com', // populated by App
+    
+    options: {
+      port:8001,
+      transports:['websocket']
+    },
     
     init: function() {
-      this.socket = new io.Socket(this.url);
+      this.socket = new io.Socket(this.url, this.options);
       this.socket.on('connect', this.connected);
       this.socket.on('message', this.received);
       this.socket.on('disconnect', this.disconnected);
@@ -242,7 +250,7 @@ $(function($){
       '#entry' : 'entryEl',
       '#users' : 'usersEl',
       '#log'   : 'logEl',
-      '#login' : 'loingEl',
+      '.login' : 'loginEl',
       '#app'   : 'appEl'
     },
     

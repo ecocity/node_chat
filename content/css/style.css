@@ -26,7 +26,7 @@ table {
 a { text-decoration: none; color: #888; }
 a:hover { text-decoration: underline; color: #aaa; }
 
-#loading, #connect {
+.login {
   background: #22252a;
   position: fixed;
   top: 0;
@@ -36,16 +36,15 @@ a:hover { text-decoration: underline; color: #aaa; }
   padding: 1em;
 }
 
-#loading { z-index: 10000000; }
-#connect { z-index: 10000001; }
+.login { z-index: 10000001; }
 
-#loading p, #connect fieldset  {
+.login fieldset  {
   font-family: DejaVu Sans Mono, fixed; 
   width: 30em;
   border: 0;
 }
 
-#toolbar {
+.toolbar {
   position: fixed;
   color: #fff;
   width: 100%; 
@@ -63,7 +62,7 @@ a:hover { text-decoration: underline; color: #aaa; }
   clear: both;
 }
 
-#log {
+.log {
   display: block;
   /* enough padding to clear the toolbar.. is there a better way to do this? */
   padding-bottom: 5.1em; 
@@ -93,18 +92,18 @@ a:hover { text-decoration: underline; color: #aaa; }
   color: inherit;
 }
 
-#toolbar ul {
+.toolbar ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-#toolbar li {
+.toolbar li {
   display: block; 
   float: left;
   margin: 0 2em 0 0;
 }
 
-#usersLink {
+.usersLink {
   color: inherit;
 }

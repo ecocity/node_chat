@@ -1,13 +1,13 @@
 function wrap(func, wrapper) {
   return function() {
-    var args = [func].concat(slice.call(arguments));
+    var args = [func].concat(Array.prototype.slice.call(arguments));
     return wrapper.apply(this, args);
   };
 }
 
 
-var SocketRouter = exports = module.exports = function SocketRouter(socket) {
-  
+var SocketRouter = exports = module.exports = function(socket) {
+  var that = this;
   this.routeMap = {};
   this.socket = socket;
   
@@ -31,7 +31,7 @@ var SocketRouter = exports = module.exports = function SocketRouter(socket) {
         if (!data.cmd) data.cmd = '';
           
         // handle the event
-        this.handle(event, data, client, function(err) {
+        that.handle(event, data, client, function(err) {
           // send the error if there was one
           if (err) client.send({ error:err, req:data });
         });
@@ -59,16 +59,22 @@ SocketRouter.prototype.add = function(path) {
 
 SocketRouter.prototype.handle = function(event, req, client, out) {
   
-  var route = this.routeMap[event + '/' + req.cmd];
-  
+  var route = event + '/' + req.cmd;
   var stack = this.routeMap[route];
   var index = 0;
+  
+  console.log('handle : ' + route);
+  
+  if (typeof stack == undefined)
+    if (out) return out();
+    else return;
   
   function next(err) {
     fn = stack[index++];
     
     if (!fn) {
       if (out) return out(err);
+      return;
     }
     
     try {

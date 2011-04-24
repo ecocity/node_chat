@@ -1,6 +1,6 @@
 (function($){
   
-  var urlRE: /https?:\/\/([-\w\.]+)+(:\d+)?(\/([^\s]*(\?\S+)?)?)?/g;
+  var urlRE = /https?:\/\/([-\w\.]+)+(:\d+)?(\/([^\s]*(\?\S+)?)?)?/g;
 
   //  html sanitizer 
   $.fn.toStaticHTML = function(inputHtml) {

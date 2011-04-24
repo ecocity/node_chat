@@ -1,5 +1,13 @@
 
 
+// when the daemon started
+var starttime = (new Date()).getTime();
+
+var mem = process.memoryUsage();
+// every 10 seconds poll for the memory.
+setInterval(function () {
+  mem = process.memoryUsage();
+}, 10*1000);
 
 
 
@@ -16,8 +24,8 @@ var MESSAGE_BACKLOG = 200,
  
 
 var channel = exports.channel = new function () {
-  var messages = [],
-      callbacks = [];
+  var messages = []; //,
+      //callbacks = [];
 
   this.appendMessage = function (nick, type, text) {
     var m = { 
@@ -41,8 +49,15 @@ var channel = exports.channel = new function () {
 
     messages.push( m );
 
+    /*
     while (callbacks.length > 0) {
       callbacks.shift().callback([m]);
+    }
+    */
+    
+    var keys = Object.keys(sessions);
+    for (var i = 0, l = keys.length; i < l; i++) {
+      sessions[keys[i]].send([m]);
     }
 
     while (messages.length > MESSAGE_BACKLOG)
@@ -66,12 +81,12 @@ var channel = exports.channel = new function () {
 
   // clear old callbacks
   // they can hang around for at most 30 seconds.
-  setInterval(function () {
+  /*setInterval(function () {
     var now = new Date();
     while (callbacks.length > 0 && now - callbacks[0].timestamp > 30*1000) {
       callbacks.shift().callback([]);
     }
-  }, 3000);
+  }, 3000);*/
 };
 
 
@@ -87,7 +102,7 @@ var channel = exports.channel = new function () {
 
 var sessions = {};
 
-function createSession (nick) {
+function createSession (id, nick, messageCallback) {
   if (nick.length > 50) return null;
   if (/[^\w_\-^!]/.exec(nick)) return null;
 
@@ -98,8 +113,10 @@ function createSession (nick) {
 
   var session = {
     nick: nick, 
-    id: Math.floor(Math.random()*99999999999).toString(),
+    id: id, //Math.floor(Math.random()*99999999999).toString(),
     timestamp: new Date(),
+    
+    send: messageCallback,
 
     poke: function () {
       session.timestamp = new Date();
@@ -119,7 +136,7 @@ function createSession (nick) {
  * interval to kill off old sessions
  */
 
-setInterval(function () {
+/*setInterval(function () {
   var now = new Date();
   for (var id in sessions) {
     if (!sessions.hasOwnProperty(id)) continue;
@@ -129,7 +146,7 @@ setInterval(function () {
       session.destroy();
     }
   }
-}, 1000);
+}, 1000);*/
 
 
 
@@ -160,7 +177,7 @@ function who() {
  * @api public
  */
  
-function join(nick) {
+function join(id, nick) {
   if (nick == null || nick.length === 0) {
     return { error:'Bad nick.' };
   }
@@ -203,8 +220,8 @@ function part(id) {
  * @param {Function} fn
  * @api public
  */
- 
-function receive(since, id, fn) {
+
+/*function receive(since, id, fn) {
   if (!since) {
     fn({ error: 'Must supply since parameter' });
     return;
@@ -221,7 +238,7 @@ function receive(since, id, fn) {
     if (session) session.poke();
     fn({ messages: messages, rss: mem.rss });
   });
-}
+}*/
 
 /**
  * Send a message
@@ -276,6 +293,6 @@ function cmd(id, cmd) {
 exports.who = who;
 exports.join = join;
 exports.part = part;
-exports.receive = receive;
+//exports.receive = receive;
 exports.send = send;
 exports.cmd = cmd;

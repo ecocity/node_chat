@@ -1,16 +1,18 @@
 <html>
   <head>
-    <link rel="stylesheet" href="content/style.css" type="text/css"/>
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <script src="//ajax.cdnjs.com/ajax/libs/underscore.js/1.1.5/underscore-min.js"></script>
     <script src="socket.io/socket.io.js"></script>
-    <script src="content/spine.min.js" type="text/javascript"></script>
+    <script src="js/spine.min.js" type="text/javascript"></script>
 
-    <script src="content/app.js"></script>
+    <script src="js/util.js"></script>
+    <script src="js/models.js"></script>
+    <script src="js/app.js"></script>
     <title>node chat</title>
   </head>
   <body>
-    <div id="login">
+    <div class="login">
       <form action="#">
         <fieldset> 
           <p>
@@ -27,14 +29,14 @@
       </form>
     </div>
       
-    <div id="app">
-      <div id="log"></div>
+    <div class="app">
+      <div class="log"></div>
       
-      <div id="toolbar">
-        <ul id="status">
+      <div class="toolbar">
+        <ul class="status">
           <li><span>0</span> users</li>
-          <li>uptime: <span id="uptime">?</span></li>
-          <li>memory: <span id="rss">?</span>mb RSS</li>
+          <li>uptime: <span class="uptime">?</span></li>
+          <li>memory: <span class="rss">?</span>mb RSS</li>
         </ul>
         <input tabindex="1" type="text" id="entry"/>
       </div>
