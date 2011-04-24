@@ -65,9 +65,10 @@ SocketRouter.prototype.handle = function(event, req, client, out) {
   
   console.log('handle : ' + route);
   
-  if (typeof stack == undefined)
+  if (typeof stack == 'undefined') {
     if (out) return out();
-    else return;
+    return;
+  }
   
   function next(err) {
     fn = stack[index++];

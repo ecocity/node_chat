@@ -71,7 +71,8 @@ $(function($){
         messageType : 'msg',
         date : +new Date,
         nick : App.user.nick,
-        text : text
+        text : text,
+        cmd : 'send'
       });
       
       // tell the app that we have a message to send
@@ -175,7 +176,7 @@ $(function($){
       this.socket.on('disconnect', this.disconnected);
         
       this.App.bind('send:message', this.send);
-      this.App.bind('login:join', this.proxy(function(nick){ this.send({nick:nick}); }));
+      this.App.bind('login:join', this.proxy(function(nick){ this.send({nick:nick,cmd:'join'}); }));
     },
     
     connect: function() {
@@ -246,12 +247,12 @@ $(function($){
     },
     
     elements: {
-      '#status': 'statusEl',
-      '#entry' : 'entryEl',
-      '#users' : 'usersEl',
-      '#log'   : 'logEl',
+      '.status': 'statusEl',
+      '.entry' : 'entryEl',
+      '.users' : 'usersEl',
+      '.log'   : 'logEl',
       '.login' : 'loginEl',
-      '#app'   : 'appEl'
+      '.app'   : 'appEl'
     },
     
     init: function() {
@@ -273,6 +274,7 @@ $(function($){
     },
     
     onJoin: function(user) {
+      console.log('login:success', user);
       if (!user) return;
       this.user = user;
       this.loginEl.toggle();
