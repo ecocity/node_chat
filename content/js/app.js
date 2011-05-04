@@ -11,7 +11,7 @@ $(function($){
     proxied: ['render'],
     
     template: function(data) {
-      return $.template('#messageTmpl')(data);
+      return $.template('messageTmpl')(data);
     },
     
     init: function() { },
@@ -35,7 +35,7 @@ $(function($){
     },
     
     addMessage: function(msg) {
-      var message = Controllers.Message.inst({item:item});
+      var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
     }
     
@@ -67,7 +67,7 @@ $(function($){
     },
     
     send: function(text) {
-      var msg = Model.Message.inst({
+      var msg = Models.Message.inst({
         messageType : 'msg',
         date : +new Date,
         nick : App.user.nick,
@@ -77,8 +77,6 @@ $(function($){
       
       // tell the app that we have a message to send
       this.App.trigger('send:message', msg);
-      
-      console.log("Send : " + msg);
     }
       
     
@@ -140,13 +138,12 @@ $(function($){
     },
     
     init: function() {
-      console.log('Login init');
+      
     },
     
     join: function(ev) {
       if (ev.type = 'keypress' && ev.keyCode != 13) return;
       ev.preventDefault();
-      console.log('JOIN');
       var nick = $('#txtNick').val();
       this.App.trigger('login:join', nick);
     }
@@ -186,8 +183,6 @@ $(function($){
     connected: function() {
       var args = Array.prototype.slice.call(arguments,0);
       this.App.trigger("socket:connected", Array.prototype.slice.call(arguments,0));
-      console.log('connected to host ' + this.url);
-      console.log('connected', args);
     },
 
     received: function(message) {
@@ -196,13 +191,13 @@ $(function($){
       // error message
       if (message.error) {
         console.error('NODE : ' + message.error);
-        var msg = Model.Message.inst({ text:message.error, type:'error', timestamp:new Date(), nick:'' });
+        var msg = Models.Message.inst({ text:message.error, type:'error', timestamp:new Date(), nick:'' });
         this.App.trigger('show:message', msg);
       }
       // event message
       else if (message.type) {
         // nick, type, text, timestamp
-        var msg = Model.Message.inst(message);
+        var msg = Models.Message.inst(message);
         this.App.trigger('show:message', msg);
       }
       // login message
@@ -228,6 +223,7 @@ $(function($){
     },
 
     send: function(message) {
+      console.log("send", message);
       this.socket.send(message);
     }
     
@@ -242,13 +238,15 @@ $(function($){
   window.App = Spine.Controller.create({
     el: $('body'),
     
+    proxied: ['onJoin'],
+    
     events: {
       
     },
     
     elements: {
       '.status': 'statusEl',
-      '.entry' : 'entryEl',
+      '#entry' : 'entryEl',
       '.users' : 'usersEl',
       '.log'   : 'logEl',
       '.login' : 'loginEl',

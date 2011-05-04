@@ -36,49 +36,48 @@ var router = new SocketRouter(socket);
 
 router.add('message/who', function(req, client, next) {
   var data = chat.who();
-  client.send(data);
+  client.send(data, req);
   next();
 });
 
 router.add('message/join', function(req, client, next) {
-  var data = chat.join(client.id, req.nick, client.send);
-  client.send(data);
+  var data = chat.join(client.sessionId, req.nick, client.send);
+  client.send(data, req);
   next();
 });
 
 router.add('message/part', function(req, client, next) {
-  var data = chat.part(client.id);
+  var data = chat.part(client.sessionId);
   //client.send(data);
   next();
 });
 
 /*router.add('message/recv', function(req, client, next) {
-  var data = chat.receive(req.since, req.id, function(data) {
+  var data = chat.receive(req.since, client.sessionId, function(data) {
     client.send(data);
     next();
   });
 });*/
 
 router.add('message/send', function(req, client, next) {
-  var data = chat.send(req.id, req.text);
-  client.send(data);
+  var data = chat.send(client.sessionId, req.text);
+  client.send(data, req);
   next();
 });
 
 router.add('message/cmd', function(req, client, next) {
-  var data = chat.cmd(req.id, req.text);
-  client.send(data);
+  var data = chat.cmd(client.sessionId, req.text);
+  client.send(data, req);
   next();
 });
 
 router.add('connection/', function(req, client, next) {
   client.send(chat.who());
-  //client.send()
   next();
 });
 
 router.add('disconnect/', function(req, client, next) {
-  chat.part(req.id)
+  chat.part(client.sessionId)
 });
 
 

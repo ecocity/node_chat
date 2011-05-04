@@ -44,6 +44,8 @@ a:hover { text-decoration: underline; color: #aaa; }
   border: 0;
 }
 
+.app { display:none; }
+
 .toolbar {
   position: fixed;
   color: #fff;

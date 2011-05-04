@@ -177,11 +177,11 @@ function who() {
  * @api public
  */
  
-function join(id, nick) {
+function join(id, nick, messageCallback) {
   if (nick == null || nick.length === 0) {
     return { error:'Bad nick.' };
   }
-  var session = createSession(nick);
+  var session = createSession(id, nick, messageCallback);
   if (session == null) {
     return { error:'Nick in use.' };
   }
@@ -189,7 +189,7 @@ function join(id, nick) {
   channel.appendMessage(session.nick, "join");
   
   return { 
-    id: session.id,
+    id: id,
     nick: session.nick,
     rss: mem.rss,
     starttime: starttime

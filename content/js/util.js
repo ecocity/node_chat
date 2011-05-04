@@ -3,7 +3,7 @@
   var urlRE = /https?:\/\/([-\w\.]+)+(:\d+)?(\/([^\s]*(\?\S+)?)?)?/g;
 
   //  html sanitizer 
-  $.fn.toStaticHTML = function(inputHtml) {
+  $.toStaticHTML = function(inputHtml) {
     inputHtml = inputHtml.toString();
     return inputHtml.replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
@@ -15,7 +15,7 @@
   //digits is minimum length of output
   //zeroPad(3, 5); returns "005"
   //zeroPad(2, 500); returns "500"
-  $.fn.zeroPad = function (digits, n) {
+  $.zeroPad = function (digits, n) {
     n = n.toString();
     while (n.length < digits) 
       n = '0' + n;
@@ -24,21 +24,22 @@
 
   //it is almost 8 o'clock PM here
   //timeString(new Date); returns "19:49"
-  $.fn.timeString = function (date) {
+  $.timeString = function (date) {
     var minutes = date.getMinutes().toString();
     var hours = date.getHours().toString();
-    return this.zeroPad(2, hours) + ":" + this.zeroPad(2, minutes);
+    return $.zeroPad(2, hours) + ":" + $.zeroPad(2, minutes);
   };
   
   //does the argument only contain whitespace?
-  $.fn.isBlank = function(text) {
+  $.isBlank = function(text) {
     var blank = /^\s*$/;
     return (text.match(blank) !== null);
   };
   
   
+  // template cache
   var tmplCache = {};
-  $.fn.template = function(id) {
+  $.template = function(id) {
     if (!tmplCache[id]) {
       tmplCache[id] = _.template($("#"+id).html());
     }
@@ -95,7 +96,7 @@ SOFTWARE.
  *
  */
   
-  $.fn.relativeTime = function(d, now_threshold) {
+  $.relativeTime = function(d, now_threshold) {
     var delta = new Date() - d;
 
     now_threshold = parseInt(now_threshold, 10);

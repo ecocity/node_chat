@@ -16,8 +16,8 @@ var SocketRouter = exports = module.exports = function(socket) {
     client.send = wrap(client.send, function(fn, message, req) {
       if (req) {
         message.req = req;
-        fn(message);
       }
+      fn.call(client, message);
     });
     
     createHandler('connection')();
@@ -27,9 +27,11 @@ var SocketRouter = exports = module.exports = function(socket) {
     
     function createHandler(event) {
       return function(data) {
+        console.log(data);
+        
         if (!data) data = {};
         if (!data.cmd) data.cmd = '';
-          
+        
         // handle the event
         that.handle(event, data, client, function(err) {
           // send the error if there was one
