@@ -1,7 +1,7 @@
 $(function($){
   window.Models = {};
   
-  var Message = window.Models.Message = Spine.Model.setup('Message', ['type', 'timestamp', 'nick', 'text']);
+  var Message = window.Models.Message = Spine.Model.setup('Message', ['type', 'timestamp', 'nick', 'text', 'cmd']);
   Message.include({
   
     date: function() {
@@ -28,11 +28,15 @@ $(function($){
   Status.include({
     
     userCount: function() {
-      return this.users.length;
+      return this.users && this.users.length || 0;
     },
     
     uptime: function() {
       return $.relativeTime(this.starttime);
+    },
+    
+    memory: function() {
+      return this.rss && (this.rss/(1024*1024)).toFixed(1) || "??";
     }
     
   });

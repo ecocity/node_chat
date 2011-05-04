@@ -35,6 +35,13 @@ $(function($){
     },
     
     addMessage: function(msg) {
+      if (msg.type) {
+        if (msg.type == 'join')
+          msg.text = msg.nick + ' joined';
+        else if (msg.type == 'part')
+          msg.text = msg.nick + ' left';
+      }
+      
       var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
     }
@@ -68,7 +75,7 @@ $(function($){
     
     send: function(text) {
       var msg = Models.Message.inst({
-        messageType : 'msg',
+        type : 'msg',
         date : +new Date,
         nick : App.user.nick,
         text : text,
@@ -101,11 +108,13 @@ $(function($){
     
     init: function() {
       this.status = Models.Status.inst({ userCount:'?', rss:'0' });
-      this.status.bind('update', this.render);
+      //this.status.bind('update', this.render);
+      
+      this.App.bind('status:update', this.render);
     },
     
     render: function(status) {
-      if (status) this.status = status;
+      if (status) _.extend(this.status, status);
       this.el.html(this.template(this.status));
     }
     
@@ -209,10 +218,10 @@ $(function($){
       
       // update status
       if (message.rss) {
-        this.App.trigger('status:rss', message.rss);
+        this.App.trigger('status:update', {rss:message.rss});
       }
       if (message.starttime) {
-        this.App.trigger('status:starttime', message.starttime);
+        this.App.trigger('status:update', {starttime:message.starttime});
       }
     },
 

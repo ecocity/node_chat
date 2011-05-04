@@ -43,19 +43,19 @@
     </div>
     
     <script id="messageTmpl" type="text/html">
-      <table class="message <#= type #>">
+      <table class="message <%= type %>">
         <tbody><tr>
-          <td class="date"><#= date #></td>
-          <td class="nick"><#= nick #></td>
-          <td class="msg-text"><#= text #></td>
+          <td class="date"><%= date %></td>
+          <td class="nick"><%= nick %></td>
+          <td class="msg-text"><%= text %></td>
         </tr></tbody>
       </table>
     </script>
     
     <script id="statusTmpl" type="text/html">
-      <li><span><#= userCount #></span> users</a></li>
-      <li>uptime: <span><#= uptime #></span></li>
-      <li>memory: <span><#= rss #></span>mb RSS</li>
+      <li><span><%= userCount %></span> users</a></li>
+      <li>uptime: <span><%= uptime() %></span></li>
+      <li>memory: <span><%= memory() %></span>mb RSS</li>
     </script>
       
   </body>
