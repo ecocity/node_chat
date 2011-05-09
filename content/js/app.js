@@ -151,7 +151,7 @@ $(function($){
     },
     
     join: function(ev) {
-      if (ev.type = 'keypress' && ev.keyCode != 13) return;
+      if (ev.type == 'keypress' && ev.keyCode != 13) return;
       ev.preventDefault();
       var nick = $('#txtNick').val();
       this.App.trigger('login:join', nick);
