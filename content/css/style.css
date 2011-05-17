@@ -7,7 +7,7 @@ body, #entry {
   color: #eee;
 }
 body, table {
-  font-family: DejaVu Sans Mono, fixed; 
+  font-family: DejaVu Sans Mono, Consolas, "Courier New", fixed; 
   font-size: 14pt;
   line-height: 150%;
 }
@@ -51,6 +51,7 @@ a:hover { text-decoration: underline; color: #aaa; }
 .app {
   height:100%;
   width:100%;
+  overflow:hidden;
   display:-webkit-box;
   -webkit-box-orient:vertical;
   -webkit-box-pack:end;
@@ -59,7 +60,6 @@ a:hover { text-decoration: underline; color: #aaa; }
 
 .toolbar {
   width:100%;
-  display:-webkit-box;
   -webkit-box-flex:0;
   height:5em;
   color: #fff;
@@ -69,11 +69,10 @@ a:hover { text-decoration: underline; color: #aaa; }
 #entry {
   width: 100%;
   font-size: inherit;
-  padding: 1em;
+  padding: 1.2em;
   margin: 0;
   border-width: 0;
   outline-width: 0;
-  clear: both;
 }
 
 .chat {
@@ -81,19 +80,29 @@ a:hover { text-decoration: underline; color: #aaa; }
   display:-webkit-box;
   -webkit-box-flex:1;
   -webkit-box-orient:horizontal;
-  background-color:red;
 }
 
 .users {
   -webkit-box-flex:1;
-  background-color:green;
+  border-right:2px solid #444748; /* 22252a */
+}
+
+.users ul {
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.users li {
+  list-style:none;
+  margin:0;
+  padding:0 0.8em;
 }
 
 .log {
   -webkit-box-flex:4;
   background: inherit;
   overflow: hidden;
-  background-color:blue;
 }
 
 /* not very important info */

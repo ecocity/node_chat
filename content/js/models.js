@@ -24,12 +24,8 @@ $(function($){
   
   
   
-  var Status = window.Models.Status = Spine.Model.setup('Status', ['users', 'starttime', 'rss']);
+  var Status = window.Models.Status = Spine.Model.setup('Status', ['userCount', 'starttime', 'rss']);
   Status.include({
-    
-    userCount: function() {
-      return this.users && this.users.length || 0;
-    },
     
     uptime: function() {
       return $.relativeTime(this.starttime);

@@ -130,6 +130,58 @@ $(function($){
   
   window.Controllers.Users = Spine.Controller.create({
     
+    proxied: [ 'render', 'userLeft', 'userJoined' ],
+    
+    events: {
+      'click li': 'selectUser'
+    },
+    
+    nicks: [],
+    
+    selectedNick : '',
+    
+    init: function() {
+      this.App.bind('user:part', this.userLeft);
+      this.App.bind('user:join', this.userJoined);
+    },
+    
+    template: function(data) {
+      return $.template('usersTmpl')(data);
+    },
+    
+    render: function() {
+      this.el.html(this.template({ users:this.nicks, selected:this.selectedNick }));
+    },
+    
+    userLeft: function(nicks) {
+      if (!nicks || !_.isArray(nicks)) return;
+      var arr = nicks.slice(0);
+      arr.unshift(this.nicks);
+      this.nicks = _.without.apply(_, arr);
+      this.render();
+      
+      this.App.trigger('status:update', {userCount:this.nicks.length});
+    },
+    
+    userJoined: function(nicks) {
+      if (!nicks || !_.isArray(nicks)) return;
+      //console.log(this.nicks)
+      Array.prototype.push.apply(this.nicks, nicks);
+      this.nicks = _.uniq(this.nicks.sort(), true);
+      this.render();
+      
+      this.App.trigger('status:update', {userCount:this.nicks.length});
+    },
+    
+    selectUser: function(ev) {
+      var item = $(ev.target);
+        
+      item.parent().find('li').removeClass('selected');
+      item.addClass('selected');
+      
+      this.selectedNick = item.html();
+    }
+    
   });
   
   
@@ -168,7 +220,7 @@ $(function($){
   
   window.Controllers.Socket = Spine.Controller.create({
     
-    proxied: ['connect', 'connected', 'received', 'disconnected', 'send'],
+    proxied: ['connect', 'connected', 'received', 'disconnected', 'send', 'login'],
     
     url: 'mike.freyday.com', // populated by App
     
@@ -184,7 +236,14 @@ $(function($){
       this.socket.on('disconnect', this.disconnected);
         
       this.App.bind('send:message', this.send);
-      this.App.bind('login:join', this.proxy(function(nick){ this.send({nick:nick,cmd:'join'}); }));
+      this.App.bind('login:join', this.login);
+    },
+    
+    login: function(nick) {
+      this.connect();
+      this.App.bind('socket:connected', this.proxy(function(){
+        this.send({nick:nick,cmd:'join'});
+      }));
     },
     
     connect: function() {
@@ -215,6 +274,7 @@ $(function($){
       else if (message.id && message.nick) {
         var user = Models.User.inst({ id:message.id, nick:message.nick });
         this.App.trigger('login:success', user);
+        this.App.trigger('user:join', [message.nick]);
       }
       
       
@@ -224,6 +284,9 @@ $(function($){
       }
       if (message.starttime) {
         this.App.trigger('status:update', {starttime:message.starttime});
+      }
+      if (message.nicks || message.type == 'join' || message.type == 'part') {
+        this.App.trigger('user:' + (message.type || 'join'), message.nicks || [message.nick]);
       }
     },
 
@@ -275,7 +338,7 @@ $(function($){
       this.login = Controllers.Login.inst({el:this.loginEl});
       
       this.socket = Controllers.Socket.inst({url:''});
-      this.socket.connect();
+      //this.socket.connect();
       
       // events
       this.App.bind('login:success', this.onJoin)

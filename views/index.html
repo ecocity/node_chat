@@ -29,8 +29,8 @@
       
     <div class="app">
       <div class="chat">
-        <div class="log">log</div>
-        <div class="users">users</div>
+        <div class="users"></div>
+        <div class="log"></div>
       </div>
       <div class="toolbar">
         <ul class="status">
@@ -56,6 +56,14 @@
       <li><span><%= userCount %></span> users</a></li>
       <li>uptime: <span><%= uptime() %></span></li>
       <li>memory: <span><%= memory() %></span>mb RSS</li>
+    </script>
+    
+    <script id="usersTmpl" type="text/html">
+      <ul>
+      <% _.each(users, function(user){ %>
+        <li<%= selected == user ? ' class="selected"' : '' %>><%= user %></li>
+      <% }); %>
+      </ul>
     </script>
       
   </body>
