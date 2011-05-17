@@ -30,6 +30,8 @@ $(function($){
   
   window.Controllers.Log = Spine.Controller.create({
     
+    proxied: [ 'addMessage' ],
+    
     init: function() {
       this.App.bind('send:message show:message', this.addMessage);
     },
@@ -37,9 +39,9 @@ $(function($){
     addMessage: function(msg) {
       if (msg.type) {
         if (msg.type == 'join')
-          msg.text = msg.nick + ' joined';
+          msg.text = 'joined';
         else if (msg.type == 'part')
-          msg.text = msg.nick + ' left';
+          msg.text = 'left';
       }
       
       var message = Controllers.Message.inst({item:msg});
@@ -76,7 +78,7 @@ $(function($){
     send: function(text) {
       var msg = Models.Message.inst({
         type : 'msg',
-        date : +new Date,
+        timestamp : +new Date,
         nick : App.user.nick,
         text : text,
         cmd : 'send'
@@ -232,7 +234,6 @@ $(function($){
     },
 
     send: function(message) {
-      console.log("send", message);
       this.socket.send(message);
     }
     
@@ -285,7 +286,7 @@ $(function($){
       if (!user) return;
       this.user = user;
       this.loginEl.toggle();
-      this.appEl.toggle();
+      //this.appEl.toggle();
     }
     
   }).inst();

@@ -44,13 +44,25 @@ a:hover { text-decoration: underline; color: #aaa; }
   border: 0;
 }
 
-.app { display:none; }
+
+
+
+
+.app {
+  height:100%;
+  width:100%;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-box-pack:end;
+  -webkit-box-align:start;
+}
 
 .toolbar {
-  position: fixed;
+  width:100%;
+  display:-webkit-box;
+  -webkit-box-flex:0;
+  height:5em;
   color: #fff;
-  width: 100%; 
-  bottom: 0;
   background: #733;
 }
 
@@ -64,12 +76,24 @@ a:hover { text-decoration: underline; color: #aaa; }
   clear: both;
 }
 
+.chat {
+  width:100%;
+  display:-webkit-box;
+  -webkit-box-flex:1;
+  -webkit-box-orient:horizontal;
+  background-color:red;
+}
+
+.users {
+  -webkit-box-flex:1;
+  background-color:green;
+}
+
 .log {
-  display: block;
-  /* enough padding to clear the toolbar.. is there a better way to do this? */
-  padding-bottom: 5.1em; 
+  -webkit-box-flex:4;
   background: inherit;
   overflow: hidden;
+  background-color:blue;
 }
 
 /* not very important info */

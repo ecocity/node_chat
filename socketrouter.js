@@ -27,7 +27,6 @@ var SocketRouter = exports = module.exports = function(socket) {
     
     function createHandler(event) {
       return function(data) {
-        console.log(data);
         
         if (!data) data = {};
         if (!data.cmd) data.cmd = '';
@@ -64,8 +63,6 @@ SocketRouter.prototype.handle = function(event, req, client, out) {
   var route = event + '/' + req.cmd;
   var stack = this.routeMap[route];
   var index = 0;
-  
-  console.log('handle : ' + route);
   
   if (typeof stack == 'undefined') {
     if (out) return out();

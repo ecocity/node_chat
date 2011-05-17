@@ -28,8 +28,10 @@
     </div>
       
     <div class="app">
-      <div class="log"></div>
-      
+      <div class="chat">
+        <div class="log">log</div>
+        <div class="users">users</div>
+      </div>
       <div class="toolbar">
         <ul class="status">
           <li><span>0</span> users</li>
@@ -43,7 +45,7 @@
     <script id="messageTmpl" type="text/html">
       <table class="message <%= type %>">
         <tbody><tr>
-          <td class="date"><%= date %></td>
+          <td class="date"><%= date() %></td>
           <td class="nick"><%= nick %></td>
           <td class="msg-text"><%= text %></td>
         </tr></tbody>

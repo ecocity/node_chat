@@ -55,9 +55,11 @@ var channel = exports.channel = new function () {
     }
     */
     
-    var keys = Object.keys(sessions);
+    var keys = Object.keys(sessions), session;
     for (var i = 0, l = keys.length; i < l; i++) {
-      sessions[keys[i]].send([m]);
+      session = sessions[keys[i]];
+      if (session.nick === m.nick) continue;
+      session.send([m]);
     }
 
     while (messages.length > MESSAGE_BACKLOG)
