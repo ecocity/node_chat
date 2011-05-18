@@ -44,6 +44,10 @@ $(function($){
           msg.text = 'left';
       }
       
+      if (App.user && msg.text.charAt(0) === '@' && msg.text.indexOf('@'+App.user.nick) != 0) return;
+      
+      msg.text = $.toStaticHTML(msg.text)
+      
       var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
       

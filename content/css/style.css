@@ -83,7 +83,8 @@ a:hover { text-decoration: underline; color: #aaa; }
 }
 
 .users {
-  -webkit-box-flex:1;
+  -webkit-box-flex:0;
+  width:200px;
   border-right:2px solid #444748; /* 22252a */
 }
 
