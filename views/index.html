@@ -61,7 +61,7 @@
     <script id="usersTmpl" type="text/html">
       <ul>
       <% _.each(users, function(user){ %>
-        <li<%= selected == user ? ' class="selected"' : '' %>><%= user %></li>
+        <li<%= selected == user ? ' class="selected"' : me == user ? ' class="me"' : '' %>><%= user %></li>
       <% }); %>
       </ul>
     </script>

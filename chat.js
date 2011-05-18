@@ -76,8 +76,8 @@ var channel = exports.channel = new function () {
 
     if (matching.length != 0) {
       callback(matching);
-    } else {
-      callbacks.push({ timestamp: new Date(), callback: callback });
+    //} else {
+    //  callbacks.push({ timestamp: new Date(), callback: callback });
     }
   };
 
@@ -190,7 +190,16 @@ function join(id, nick, messageCallback) {
   
   channel.appendMessage(session.nick, "join");
   
-  return { 
+  channel.query(0, function(messages) {
+    if (messages && messages.length > 0) {
+      session.send(messages);
+      //for (var i = 0, l = messages.length; i < l; i++) {
+      //  session.send(messages[i]);
+      //}
+    }
+  });
+  
+  return {
     id: id,
     nick: session.nick,
     rss: mem.rss,

@@ -46,6 +46,8 @@ $(function($){
       
       var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
+      
+      this.el.scrollTop(this.el[0].scrollHeight);
     }
     
   });
@@ -150,7 +152,11 @@ $(function($){
     },
     
     render: function() {
-      this.el.html(this.template({ users:this.nicks, selected:this.selectedNick }));
+      this.el.html(this.template({ 
+        users:this.nicks, 
+        selected:this.selectedNick,
+        me: App.user && App.user.nick || ''
+      }));
     },
     
     userLeft: function(nicks) {
@@ -165,7 +171,7 @@ $(function($){
     
     userJoined: function(nicks) {
       if (!nicks || !_.isArray(nicks)) return;
-      //console.log(this.nicks)
+      
       Array.prototype.push.apply(this.nicks, nicks);
       this.nicks = _.uniq(this.nicks.sort(), true);
       this.render();
@@ -256,8 +262,7 @@ $(function($){
     },
 
     received: function(message) {
-      console.log('message', arguments);
-      
+    
       // error message
       if (message.error) {
         console.error('NODE : ' + message.error);
@@ -345,7 +350,6 @@ $(function($){
     },
     
     onJoin: function(user) {
-      console.log('login:success', user);
       if (!user) return;
       this.user = user;
       this.loginEl.toggle();

@@ -99,10 +99,21 @@ a:hover { text-decoration: underline; color: #aaa; }
   padding:0 0.8em;
 }
 
+.users li.selected {
+  /*background-color:#E0D01B;*/
+  background-color:#B3A82D;
+  color:#000;
+}
+
+.users li.me {
+  color:#999;
+}
+
 .log {
   -webkit-box-flex:4;
   background: inherit;
-  overflow: hidden;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 /* not very important info */
