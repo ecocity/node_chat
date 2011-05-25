@@ -48,7 +48,7 @@ $(function($){
       
       msg.text = $.toStaticHTML(msg.text)
       
-      var rx = /(http(s?)://|www\.).+/ig;
+      var rx = /(http(s?)\:\/\/|www\.).+/ig;
       
       var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
