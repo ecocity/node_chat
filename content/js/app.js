@@ -48,10 +48,17 @@ $(function($){
       
       msg.text = $.toStaticHTML(msg.text)
       
+      var rx = /(http(s?)://|www\.).+/ig;
+      
       var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
       
       this.el.scrollTop(this.el[0].scrollHeight);
+      
+      if (!App.hasFocus && msg.type === 'msg') {
+        App.notification.show(msg.nick+' says', msg.text.substring(0,60), 'alert', 3000);
+        App.sounds.message.play();
+      }
     }
     
   });
@@ -225,6 +232,108 @@ $(function($){
   
   
   /**
+   * Sound Controller
+   */
+   
+  window.Controllers.Sound = Spine.Controller.create({
+     
+    proxied: ['play'],
+     
+    sound: 'message',
+     
+    ready: false,
+     
+    channels: [],
+     
+    init: function() {
+      var clip = document.createElement('audio');
+      clip.src = 'audio/' + this.sound + (clip.canPlayType('audio/ogg') ? '.ogg' : '.mp3');
+      
+      clip.addEventListener('canplaythrough', function(ev){
+        this.ready = true;
+      }, false);
+      
+      clip.load();
+      clip.autobuffer = true;
+      clip.preload = 'auto';
+      
+      for (var i = 0; i < 4; i++) {
+        this.channels.push(clip.cloneNode(true));
+      }
+    },
+    
+    play: function() {
+      if (!this.ready) return;
+      var clip;
+      for (var i = 0, channel; channel = this.channels[i++];) {
+        if (channel.paused || channel.ended) {
+          if (channel.ended) channel.currentTime = 0;
+          clip = channel;
+          break;
+        }
+      }
+      if (!clip) {
+        clip = this.channels[0];
+        clip.pause();
+        clip.currentTime = 0;
+      }
+      clip.play();
+    }
+    
+  });
+  
+  
+  /**
+   * Notification Controller
+   */
+   
+  window.Controllers.Notification = Spine.Controller.create({
+    
+    proxied: [ 'show', 'enable' ],
+    
+    events: {
+      'click': 'enable'
+    },
+    
+    enabled: false,
+    supported: !!window.webkitNotifications,
+    
+    init: function() {
+      if (!this.supported) {
+        this.el.hide();
+      }
+      else if (window.webkitNotifications.checkPermission() == 0) {
+        this.enabled = true;
+        this.el.hide();
+      }
+    },
+    
+    enable: function() {
+      if (window.webkitNotifications.checkPermission() !== 0) {
+        window.webkitNotifications.requestPermission(this.proxy(function(){
+          if (window.webkitNotifications.checkPermission() === 0) {
+            this.enabled = true;
+            this.el.hide();
+          }
+        }));
+      }
+    },
+    
+    show: function(title, content, icon, duration) {
+      if (!this.enabled) return;
+      
+      var noti = window.webkitNotifications.createNotification('img/'+icon+'.png', title, content);
+      noti.show();
+      setTimeout(
+        function(){noti.cancel();}, 
+        duration && Math.min(5000, Math.max(1000, duration)) || 2500
+      );
+    }
+    
+  });
+  
+  
+  /**
    * Socket Controller
    */
   
@@ -322,11 +431,10 @@ $(function($){
     
     proxied: ['onJoin'],
     
-    events: {
-      
-    },
+    events: { },
     
     elements: {
+      '.notify': 'notifyEl',
       '.status': 'statusEl',
       '#entry' : 'entryEl',
       '.users' : 'usersEl',
@@ -338,6 +446,7 @@ $(function($){
     init: function() {
       // current user
       this.user = null;
+      this.hasFocus = true;
       
       // controllers
       this.users = Controllers.Users.inst({el:this.usersEl});
@@ -345,9 +454,13 @@ $(function($){
       this.status = Controllers.Status.inst({el:this.statusEl});
       this.log = Controllers.Log.inst({el:this.logEl});
       this.login = Controllers.Login.inst({el:this.loginEl});
+      this.notification = Controllers.Notification.inst({el:this.notifyEl});
       
       this.socket = Controllers.Socket.inst({url:''});
-      //this.socket.connect();
+      
+      this.sounds = {
+        "message" : Controllers.Sound.inst({sound:"message"})
+      };
       
       // events
       this.App.bind('login:success', this.onJoin)
@@ -362,5 +475,15 @@ $(function($){
     
   }).inst();
   
+  // listen for browser events so we know when the window has focus
+  $(window).bind('blur', function() {
+    App.hasFocus = false;
+    console.log('blur');
+  });
+
+  $(window).bind('focus', function() {
+    App.hasFocus = true;
+    console.log('focus');
+  });
   
 });
