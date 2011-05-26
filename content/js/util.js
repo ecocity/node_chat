@@ -10,6 +10,26 @@
                     .replace(/>/g, "&gt;")
                     .replace(/\"/g, "&quot;");
   };
+  
+  // url highlighter
+  $.detectURLs = function(str) {
+    var rx = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/ig;
+      
+    var text = [];
+    str.split(rx).forEach(function(s) {
+      if (s !== undefined) {
+        if (rx.test(s)) {
+          var url = s;
+          if (url.indexOf('http') !== 0) url = '//' + url;
+          text.push(['<a href="', url, '">', s, '</a>'].join(''))
+        }
+        else {
+          text.push(s);
+        }
+      }
+    });
+    return text.join('');
+  };
 
   //pads n with zeros on the left,
   //digits is minimum length of output

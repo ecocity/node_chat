@@ -48,12 +48,6 @@ var channel = exports.channel = new function () {
     }
 
     messages.push( m );
-
-    /*
-    while (callbacks.length > 0) {
-      callbacks.shift().callback([m]);
-    }
-    */
     
     var keys = Object.keys(sessions), session;
     for (var i = 0, l = keys.length; i < l; i++) {
@@ -76,19 +70,9 @@ var channel = exports.channel = new function () {
 
     if (matching.length != 0) {
       callback(matching);
-    //} else {
-    //  callbacks.push({ timestamp: new Date(), callback: callback });
     }
   };
 
-  // clear old callbacks
-  // they can hang around for at most 30 seconds.
-  /*setInterval(function () {
-    var now = new Date();
-    while (callbacks.length > 0 && now - callbacks[0].timestamp > 30*1000) {
-      callbacks.shift().callback([]);
-    }
-  }, 3000);*/
 };
 
 
@@ -134,23 +118,6 @@ function createSession (id, nick, messageCallback) {
   return session;
 }
 
-/**
- * interval to kill off old sessions
- */
-
-/*setInterval(function () {
-  var now = new Date();
-  for (var id in sessions) {
-    if (!sessions.hasOwnProperty(id)) continue;
-    var session = sessions[id];
-
-    if (now - session.timestamp > SESSION_TIMEOUT) {
-      session.destroy();
-    }
-  }
-}, 1000);*/
-
-
 
 
 
@@ -193,9 +160,6 @@ function join(id, nick, messageCallback) {
   channel.query(0, function(messages) {
     if (messages && messages.length > 0) {
       session.send(messages);
-      //for (var i = 0, l = messages.length; i < l; i++) {
-      //  session.send(messages[i]);
-      //}
     }
   });
   
@@ -222,34 +186,6 @@ function part(id) {
   }
   return { rss: mem.rss };
 }
-
-/**
- * Ready to receive messages
- *
- * @param {int} since
- * @param {String} id
- * @param {Function} fn
- * @api public
- */
-
-/*function receive(since, id, fn) {
-  if (!since) {
-    fn({ error: 'Must supply since parameter' });
-    return;
-  }
-  
-  var session = sessions[id];
-  if (id && session) {
-    session.poke();
-  }
-
-  var since = parseInt(since, 10);
-  
-  channel.query(since, function (messages) {
-    if (session) session.poke();
-    fn({ messages: messages, rss: mem.rss });
-  });
-}*/
 
 /**
  * Send a message

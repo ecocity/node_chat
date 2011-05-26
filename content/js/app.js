@@ -36,7 +36,10 @@ $(function($){
       this.App.bind('send:message show:message', this.addMessage);
     },
     
-    addMessage: function(msg) {
+    addMessage: function(message) {
+      
+      var msg = _.clone(message);
+    
       if (msg.type) {
         if (msg.type == 'join')
           msg.text = 'joined';
@@ -46,14 +49,15 @@ $(function($){
       
       if (App.user && msg.text.charAt(0) === '@' && msg.text.indexOf('@'+App.user.nick) != 0) return;
       
-      msg.text = $.toStaticHTML(msg.text)
-      
-      var rx = /(http(s?)\:\/\/|www\.).+/ig;
+      msg.text = $.toStaticHTML(msg.text);
+      msg.text = $.detectURLs(msg.text);
       
       var message = Controllers.Message.inst({item:msg});
       this.el.append(message.render().el);
       
       this.el.scrollTop(this.el[0].scrollHeight);
+      
+      App.updateTitle(1);
       
       if (!App.hasFocus && msg.type === 'msg') {
         App.notification.show(msg.nick+' says', msg.text.substring(0,60), 'alert', 3000);
@@ -447,6 +451,7 @@ $(function($){
       // current user
       this.user = null;
       this.hasFocus = true;
+      this.unreadCount = 0;
       
       // controllers
       this.users = Controllers.Users.inst({el:this.usersEl});
@@ -463,7 +468,7 @@ $(function($){
       };
       
       // events
-      this.App.bind('login:success', this.onJoin)
+      this.App.bind('login:success', this.onJoin);
     },
     
     onJoin: function(user) {
@@ -471,6 +476,18 @@ $(function($){
       this.user = user;
       this.loginEl.toggle();
       //this.appEl.toggle();
+    },
+    
+    updateTitle: function(cnt) {
+      if (cnt) this.unreadCount += cnt;
+      
+      if (this.hasFocus) {
+        this.unreadCount = 0;
+        document.title = 'node chat';
+      }
+      else if (this.unreadCount > 0) {
+        document.title = '(' + this.unreadCount + ') node chat';
+      }
     }
     
   }).inst();
@@ -478,12 +495,11 @@ $(function($){
   // listen for browser events so we know when the window has focus
   $(window).bind('blur', function() {
     App.hasFocus = false;
-    console.log('blur');
   });
 
   $(window).bind('focus', function() {
     App.hasFocus = true;
-    console.log('focus');
+    App.updateTitle();
   });
   
 });
